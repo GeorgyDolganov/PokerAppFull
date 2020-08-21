@@ -1,0 +1,169 @@
+@import url("https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700;900&display=swap");
+* {
+  font-family: 'Merriweather', serif;
+  margin: 0;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  height: 100%;
+  overflow: hidden;
+}
+
+.header {
+  background-color: #4C3B4D;
+  color: white;
+  padding: 20px;
+}
+
+.header .btn-box {
+  margin-top: 10px;
+}
+
+button {
+  border: none;
+}
+
+.row {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+.btn {
+  color: #4C3B4D;
+  background-color: white;
+  border-radius: 4px;
+  padding: 10px;
+  -webkit-transition: 0.15s;
+  transition: 0.15s;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn:hover {
+  background-color: #ccc;
+}
+
+.btn + .btn {
+  margin-left: 10px;
+}
+
+.table {
+  background-color: #82968C;
+  height: 100%;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+.table .card {
+  height: 154px;
+  width: 110px;
+  background-size: contain;
+}
+
+.table .card + .card {
+  margin-left: 10px;
+}
+
+.table .card-draft {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  position: absolute;
+  margin: auto;
+  width: 100%;
+  height: 100%;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+}
+
+.table .player {
+  width: 33.3333333%;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+}
+
+.table .player-box {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  width: 100%;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+}
+
+.table .player-box .empty {
+  width: 33.3333333%;
+}
+
+.table .player .attributes {
+  margin: auto;
+}
+
+.table .player .text {
+  text-align: center;
+}
+
+.table .player .hand {
+  margin-top: 15px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+}
+
+.table .player .hand .card {
+  height: 115px;
+  width: 82px;
+}
+
+.hand {
+  background-color: #82968C;
+  height: 100%;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+.hand .card {
+  height: 300px;
+  width: 215px;
+  background-size: contain;
+}
+
+.hand .card + .card {
+  margin-left: 10px;
+}
+
+.hand .card-draft {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  position: absolute;
+  margin: auto;
+  width: 100%;
+  height: 100%;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+}
+/*# sourceMappingURL=index.css.map */

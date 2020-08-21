@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="format-detection" content="telephone=no">
+        <meta name="msapplication-tap-highlight" content="no">
+        <meta name="viewport" content="initial-scale=1, width=device-width, viewport-fit=cover">
+        <link rel="stylesheet" type="text/css" href="css/index.css">
+        <title>PokerApp</title>
+    </head>
+    <body>
+        <div class="header">
+            <h1>Настройка игры</h1>
+            <div class="row btn-box">
+                <a class="btn" href="player.html">Игрок</a>
+                <a class="btn" href="table.html">Крупье</a>
+            </div>
+            <div class="row btn-box">
+                <div class="btn" onclick="restartGame()">Рестарт</div>
+                <div class="btn" id="btn-start" onclick="startGame('btn-start');">Старт</a>
+            </div>
+        </div>
+        <script type="text/javascript" src="cordova.js"></script>
+        <script src="js/stateMachine.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
+        <script type="text/javascript" src="https://unpkg.com/axios/dist/axios.min.js"></script>
+        <script type="text/javascript" src="js/utilites.js"></script>
+        <script type="text/javascript" src="js/admin.js"></script>
+        <script type="text/javascript" src="js/events.js"></script>
+    </body>
+</html>

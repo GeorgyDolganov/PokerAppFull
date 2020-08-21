@@ -1,0 +1,175 @@
+@charset "UTF-8";
+@import url("https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700;900&display=swap");
+* {
+  font-family: "Merriweather", serif;
+  margin: 0;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  height: 100%;
+  overflow: hidden;
+}
+
+.header {
+  background-color: #4C3B4D;
+  color: white;
+  padding: 20px;
+}
+.header .btn-box {
+  margin-top: 10px;
+}
+
+button {
+  border: none;
+}
+
+.row {
+  display: flex;
+}
+
+.btn {
+  color: #4C3B4D;
+  background-color: white;
+  border-radius: 4px;
+  padding: 10px;
+  transition: 0.15s;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+}
+.btn:hover {
+  background-color: #ccc;
+}
+.btn + .btn {
+  margin-left: 10px;
+}
+
+#slider {
+  width: 100%;
+}
+
+.table {
+  background-color: #82968C;
+  height: 100%;
+  display: flex;
+}
+.table .pot {
+  position: absolute;
+  top: 40px;
+  left: 40px;
+}
+.table .card {
+  height: 154px;
+  width: 110px;
+  background-size: contain;
+}
+.table .card + .card {
+  margin-left: 10px;
+}
+.table .card-draft {
+  display: flex;
+  position: absolute;
+  margin: auto;
+  width: 100%;
+  top: 100px;
+  align-items: center;
+  justify-content: center;
+}
+.table .player {
+  width: 25%;
+  display: flex;
+  flex-direction: column;
+  margin: 20px 0;
+}
+.table .player-box {
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
+  position: absolute;
+  bottom: 70px;
+  justify-content: center;
+}
+.table .player-box .empty {
+  width: 33.3333333%;
+}
+.table .player .attributes {
+  margin: auto;
+}
+.table .player .text {
+  text-align: center;
+}
+.table .player .hand {
+  margin-top: 15px;
+  display: flex;
+  justify-content: center;
+}
+.table .player .hand .card {
+  height: 115px;
+  width: 82px;
+}
+
+.client .panel {
+  padding: 40px;
+  background-color: #4C3B4D;
+  display: flex;
+  justify-content: space-between;
+  color: white;
+}
+.client .panel.bottom {
+  position: absolute;
+  bottom: 0;
+  width: calc(100% - 80px);
+  flex-direction: column;
+}
+.client .panel.bottom .row {
+  display: flex;
+  margin-top: 80px;
+}
+.client .panel.bottom .row .btn {
+  width: 33.3333333%;
+}
+.client .hand {
+  background-color: #82968C;
+  height: 100%;
+}
+.client .hand .card {
+  height: 300px;
+  width: 215px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.client .hand .card + .card {
+  margin-left: 10px;
+}
+.client .hand .card::after {
+  content: "⠀";
+  height: 300px;
+  opacity: 1;
+  width: 215px;
+  position: absolute;
+  background-image: url(../cards/back_red.svg);
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  transition: 0.05s ease-in-out;
+}
+.client .hand .card-draft {
+  display: flex;
+  position: absolute;
+  margin: auto;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  align-items: center;
+  justify-content: center;
+}
+.client .hand .card-draft:active .card::after {
+  opacity: 0;
+}
+
+/*# sourceMappingURL=index.css.map */
