@@ -5,9 +5,13 @@ var os = require("os"),
   currentTurn = 0,
   turn = 0,
   calledPlayers = 0,
+  foldedPlayers = 0,
   handsSent = 0,
   tableCards = [],
+  lastBet = 0,
+  showdownPlayers = [],
   playerVendor = [],
+  playerThatRaised,
   currentWinner = undefined,
   finalPlayers = [],
   tablePot = 0;
@@ -145,6 +149,7 @@ var game = new StateMachine({
   methods: {
     onStart: function () {
       io.of("/player").emit("startGame");
+      playersActive = players.length;
       nextTurn(100);
     },
     onDealFlop: function () {
@@ -165,9 +170,14 @@ var game = new StateMachine({
     },
     onRestart: function () {
       tablePot = 0;
+      tableCards = [];
       currentWinner = undefined;
       currentTurn = 0;
       calledPlayers = 0;
+      showdownPlayers = [];
+      handsSent = 0;
+      playersActive = players.length;
+      foldedPlayers = 0;
       deck = new Deck();
       deck.generate_deck();
       deck.shuffle();
@@ -178,14 +188,14 @@ var game = new StateMachine({
   }
 });
 
-nextTurn = lastBet => {
+nextTurn = (bet) => {
   turn = currentTurn++ % players.length;
-  players[turn].emit("yourTurn", lastBet);
+  players[turn].emit("yourTurn", bet);
   console.log(
     "Next turn triggered. Current turn: " +
       currentTurn +
       ". Last Bet: " +
-      lastBet
+      bet
   );
 };
 
@@ -280,9 +290,9 @@ getWinner = arr => {
 };
 
 gameEnd = async() =>{
-  var winnerIndex = await getWinner(players);
-  let winner = players[winnerIndex];
-  winner.game.cash += tablePot;
+  var winnerIndex = await getWinner(showdownPlayers);
+  let winner = showdownPlayers[winnerIndex];
+  winner.cash += tablePot;
   io.of("/table").emit("updatePot", tablePot, true);
   io.of("/player").emit("beforeCardsDisplay");
   winner.emit("onWin", tablePot);
@@ -291,8 +301,9 @@ gameEnd = async() =>{
     winner.game.name,
     winner.game.cash
   );
-  let loosers = players;
-  loosers.splice(winnerIndex, 1);
+  let loosers = showdownPlayers.filter(player=>{
+    return player != winner
+  });
   loosers.forEach(looser => {
     looser.emit("onLoose", winner.game.name);
   });
@@ -306,36 +317,35 @@ io.of("/player").on("connection", socket => {
     console.log("player id=" + socket.id + " disconnected");
     players.splice(players.indexOf(socket), 1);
     turn--;
-    console.log("A number of players now ", players.length);
-    io.of("/table").emit("deletePlayer", socket.game.name);
+    io.of("/table").emit("deletePlayer", socket.name);
   });
   socket.on("Restart", () => {
     game.restart();
   });
-  socket.on("returnPlayer", () => {
-    players.push(socket);
-  });
-  socket.on("displayPlayer", (name, cash) => {
-    socket.game = {};
-    socket.game.name = name;
-    socket.game.cash = cash;
-    io.of("/table").emit("displayPlayer", name, cash);
+  socket.on("storePlayer", (User) => {
+    socket.game = User;
+  })
+  socket.on("displayPlayer", (user) => {
+    socket.name = user.name;
+    socket.cash = user.cash;
+    io.of("/table").emit("displayPlayer", user.name, user.cash);
   });
   socket.on("dealCardsServer", () => {
     socket.emit("dealCardsClient", deck.deal(2));
   });
-  socket.on("passTurn", (lastBet, action) => {
+  socket.on("passTurn", (bet, action) => {
+    lastBet = bet;
     if (action == "call") {
       calledPlayers++;
       tablePot += lastBet;
-      socket.game.cash -= lastBet;
+      socket.cash -= lastBet;
       io.of("/table").emit(
         "updatePlayer",
-        socket.game.name,
-        socket.game.cash
+        socket.name,
+        socket.cash
       );
       io.of("/table").emit("updatePot", tablePot, false);
-      if (calledPlayers < players.length) {
+      if (calledPlayers < playersActive && playerThatRaised != players[(currentTurn) % players.length]) {
         if (players[turn] == socket) {
           nextTurn(lastBet);
         }
@@ -343,60 +353,82 @@ io.of("/player").on("connection", socket => {
         if (game.is("FirstBet")) {
           game.dealFlop();
           calledPlayers = 0;
+          lastBet = 0;
           nextTurn(lastBet);
         } else if (game.is("FlopCards")) {
           game.dealTurn();
           calledPlayers = 0;
+          lastBet = 0;
           nextTurn(lastBet);
         } else if (game.is("TurnCard")) {
           game.dealRiver();
           calledPlayers = 0;
+          lastBet = 0;
           nextTurn(lastBet);
         } else if (game.is("RiverCard")) {
           calledPlayers = 0;
+          lastBet = 0;
           game.showdown();
         }
       }
     } else if (action == "raise") {
+      if (calledPlayers == 0){
+        playerThatRaised = socket;
+      }
       calledPlayers = 0;
       tablePot += lastBet;
       socket.cash -= lastBet;
-      io.of("/table").emit("updatePlayer", socket.game.name, socket.cash);
+      io.of("/table").emit("updatePlayer", socket.name, socket.cash);
       io.of("/table").emit("updatePot", tablePot, false);
       if (players[turn] == socket) {
         nextTurn(lastBet);
       }
     } else if (action == "fold") {
-      players.splice(players.indexOf(socket), 1);
-      turn--;
-      io.of("/table").emit("foldPlayer", socket.game.name);
-      if (!players.length > 1) {
-        players[turn].emit("onWin", tablePot);
+      playersActive--;
+      foldedPlayers++;
+      io.of("/table").emit("foldPlayer", socket.name);
+      if (playersActive <= 1 || foldedPlayers >= players.length) {
+        socket.cash += tablePot;
+        io.of("/table").emit("updatePot", tablePot, true);
+        players[turn+1].emit("onWin", tablePot);
+        io.of("/table").emit(
+          "updatePlayer",
+          socket.name,
+          socket.cash
+        );
+        let loosers = players.filter(player=>{
+          return player != players[turn+1]
+        });
+        loosers.forEach(looser => {
+          looser.emit("onLoose", players[turn+1].game.name);
+        });
+      } else {
+        nextTurn(lastBet);
       }
-      nextTurn(lastBet);
     } else {
       calledPlayers = 0;
+      lastBet = 0;
       nextTurn(lastBet);
     }
   });
   socket.on("addCards", async data => {
-    let playerIndex = players.indexOf(socket);
-    console.log(playerIndex);
-    players[playerIndex].game = data;
+    showdownPlayers.push(socket);
+    let player = showdownPlayers.indexOf(socket);
+    showdownPlayers[player].game = data;
     let fmtHand = await formatHand(data.cards);
     let fmtTable = await formatHand(tableCards);
     let fullHand = fmtTable.concat(fmtHand);
-    players[playerIndex].game.hand = Hand.solve(fullHand);
+    showdownPlayers[player].game.hand = Hand.solve(fullHand);
     handsSent++;
-    if (handsSent == players.length && !players.includes(undefined)) {
+    console.log(handsSent, playersActive)
+    if (handsSent == playersActive) {
       gameEnd();
     } else {
       console.log("ERROR: Winners could not be calculated");
     }
   });
   socket.on("displayBlankCards", () => {
-    console.log(socket.game.name);
-    io.of("/table").emit("displayBacks", socket.game.name);
+    io.of("/table").emit("displayBacks", socket.name);
   });
   socket.on("showPlayersCards", (user) => {
     io.of("/table").emit("openCards", user);

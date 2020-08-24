@@ -8,12 +8,13 @@ var User = {
     dead: false
   },
   slider,
-  lastBet = 100;
+  lastBet;
 
 player.on("connect", function () {
   if (User.name == null) {
     User.name = prompt("Введите своё имя", "Игрок");
     document.getElementById("player-name").textContent = User.name;
+    player.emit("storePlayer", User);
   }
   document.getElementById("player-cash").textContent = User.cash;
   player.on("text", function (text) {
@@ -21,7 +22,7 @@ player.on("connect", function () {
   });
 
   player.on("connectToTable", () => {
-    player.emit("displayPlayer", User.name, User.cash);
+    player.emit("displayPlayer", User);
   });
 
   player.on("dealCardsClient", cards => {
@@ -35,10 +36,10 @@ player.on("connect", function () {
   });
 
   player.on("startGame", () => {
+    lastBet = 100;
     if (!User.dead){
       if (User.active == false) {
         User.active = true;
-        player.emit("returnPlayer");
       }
       User.cards = null;
       player.emit("dealCardsServer"); 
@@ -46,11 +47,11 @@ player.on("connect", function () {
   });
 
   player.on("yourTurn", getLastBet => {
+    console.log(getLastBet);
+    lastBet = getLastBet;
     if (User.active && !User.dead) {
       alert("Твой ход");
-      if (getLastBet) {
-        lastBet = Number(getLastBet);
-      }
+      console.log(lastBet);
       document.getElementById("player-lastbet").textContent =
         "Последняя ставка " + lastBet;
       createUI();
@@ -64,6 +65,8 @@ player.on("connect", function () {
   });
 
   player.on("onWin", tablePot => {
+    removeUI();
+    removeCards();
     alert(`Вы выйграли и получили: ${tablePot}!`);
     User.allIn = false;
     let pot = Math.floor(parseInt(tablePot));
@@ -72,9 +75,22 @@ player.on("connect", function () {
     createRestartButton();
   });
 
+  player.on("foldWin", tablePot => {
+    removeUI();
+    removeCards();
+    alert(`Все игроки сложили карты! Вы заработали: ${tablePot}!`);
+    User.allIn = false;
+    let pot = Math.floor(parseInt(tablePot));
+    User.cash += pot;
+    document.getElementById("player-lastbet").textContent = "";
+    document.getElementById("player-cash").textContent = User.cash;
+    createRestartButton();
+  })
+
   player.on("onLoose", winnerName => {
     removeUI();
     removeCards();
+    document.getElementById("player-lastbet").textContent = "";
     if (User.allIn == true){
       User.dead = true;
       document.getElementById("player-name").textContent = "Вы выбыли из игры";
@@ -82,7 +98,7 @@ player.on("connect", function () {
       document.getElementById("player-lastbet").textContent = "";
       alert(`К сожалению вы проиграли, попробуйте в следующий раз`);
     } else {
-      alert(`Вы проиграли. Выйгрыш  забирает ${winnerName}`);
+      alert(`Вы проиграли. Выйгрыш забирает ${winnerName}`);
     }
   });
 
@@ -107,7 +123,7 @@ call = () => {
       let bet = lastBet;
       alert("Вы приняли ставку");
       removeUI();
-      player.emit("passTurn", bet, "call");
+      player.emit("passTurn", lastBet, "call");
       User.cash -= bet;
       document.getElementById("player-cash").textContent = User.cash;
     }
@@ -119,7 +135,7 @@ call = () => {
 double = () => {
   if (User.cash > lastBet * 2){
     slider.noUiSlider.set(lastBet * 2);
-    let bet = Math.floor(slider.noUiSlider.set(lastBet * 2));
+    let bet = Math.floor(slider.noUiSlider.get());
     alert("Вы удвоили ставку, ваша ставка равна " + bet);
     removeUI();
     player.emit("passTurn", bet, "raise");
@@ -139,12 +155,15 @@ raise = () => {
     removeUI(); 
     player.emit("passTurn", bet, "raise");
     document.getElementById("player-cash").textContent = User.cash;
+  } else if (slider.noUiSlider.get() == 0){
+    call();
   } else {
     let bet = Math.floor(slider.noUiSlider.get());
-    alert("Вы подняли ставку до " + (bet + lastBet));
-    player.emit("passTurn", bet + lastBet, "raise");
+    newBet = bet + lastBet;
+    alert("Вы подняли ставку до " + (newBet));
+    player.emit("passTurn", newBet, "raise");
     removeUI();
-    User.cash -= bet + lastBet;
+    User.cash -= newBet;
     document.getElementById("player-cash").textContent = User.cash;
   }
 };

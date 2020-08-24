@@ -5,19 +5,21 @@ table.on("connect", function () {
     alert(text);
   });
   table.on("displayPlayer", (name, cash) => {
-    document.getElementById("playerBox").insertAdjacentHTML(
-      "beforeend",
-      `<div class="player" id="${name}">
-            <div class="attributes">
-              <div class="text">
-                <h3>${name}</h3>
-                <h5 id="${name}-cash">${cash}</h5>
+    if(!document.getElementById(name)){
+      document.getElementById("playerBox").insertAdjacentHTML(
+        "beforeend",
+        `<div class="player" id="${name}">
+              <div class="attributes">
+                <div class="text">
+                  <h3>${name}</h3>
+                  <h5 id="${name}-cash">${cash}</h5>
+                </div>
+                <div id="${name}-hand" class="hand">
+                </div>
               </div>
-              <div id="${name}-hand" class="hand">
-              </div>
-            </div>
-          </div>`
-    );
+            </div>`
+      );
+    }
   });
   table.on("deletePlayer", name => {
     if (document.getElementById(name)){

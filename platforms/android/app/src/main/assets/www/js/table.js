@@ -5,27 +5,32 @@ table.on("connect", function () {
     alert(text);
   });
   table.on("displayPlayer", (name, cash) => {
-    document.getElementById("playerBox").insertAdjacentHTML(
-      "beforeend",
-      `<div class="player" id="${name}">
-            <div class="attributes">
-              <div class="text">
-                <h3>${name}</h3>
-                <h5 id="${name}-cash">${cash}</h5>
+    if(!document.getElementById(name)){
+      document.getElementById("playerBox").insertAdjacentHTML(
+        "beforeend",
+        `<div class="player" id="${name}">
+              <div class="attributes">
+                <div class="text">
+                  <h3>${name}</h3>
+                  <h5 id="${name}-cash">${cash}</h5>
+                </div>
+                <div id="${name}-hand" class="hand">
+                </div>
               </div>
-              <div class="${name}-hand">
-              </div>
-            </div>
-          </div>`
-    );
+            </div>`
+      );
+    }
   });
   table.on("deletePlayer", name => {
-    document.getElementById(name).remove();
+    if (document.getElementById(name)){
+      document.getElementById(name).remove();
+    }
   });
   table.on("updatePlayer", (name, cash) => {
     document.getElementById(`${name}-cash`).textContent = cash;
   });
   table.on("displayBacks", (playerName) => {
+    console.log(playerName);
     document.getElementById(`${playerName}-hand`).innerHTML =  `
     <div
       class="card"
@@ -53,17 +58,16 @@ table.on("connect", function () {
   table.on("removeCards", () => {
     document.getElementById("cardDraft").innerHTML = "";
   });
-  table.on("openCards", players => {
-    players.forEach(player => {
-      document.getElementById(`${player.game.name}-hand`).innerHTML =  `
-      <div
-        class="card"
-        style="background-image: url(cards/${player.game.cards[0]}.svg);"
-      ></div>
-      <div
-        class="card"
-        style="background-image: url(cards/${player.game.cards[1]}.svg);"
-      ></div>`
-    });
+  table.on("openCards", User => {
+    console.log("openCards");
+    document.getElementById(`${User.name}-hand`).innerHTML =  `
+    <div
+      class="card"
+      style="background-image: url(cards/${User.cards[0].name}.svg);"
+    ></div>
+    <div
+      class="card"
+      style="background-image: url(cards/${User.cards[1].name}.svg);"
+    ></div>`
   });
 });
